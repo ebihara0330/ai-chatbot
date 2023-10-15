@@ -1,23 +1,24 @@
-import streamlit as st
-import requests
+from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.templating import Jinja2Templates
+from fastapi import Request
+from fastapi.responses import HTMLResponse
+app = FastAPI()
 
-st.markdown("""
-    <style>
-        .title {
-            font = "sans-serif";
-            font-size:60px !important;
-            font-weight: bold;
-        }
-    </style>
-    """, unsafe_allow_html=True)
+security = HTTPBasic()
+templates = Jinja2Templates(directory="templates")  # UIファイルのディレクトリを指定
 
-st.markdown('<div class="title">COE-AI Chatbot</div>', unsafe_allow_html=True)
+# def get_current_username(credentials: HTTPBasicCredentials = Depends(security)):
+#     correct_username = "username"
+#     correct_password = "password"
+#     if credentials.username != correct_username or credentials.password != correct_password:
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail="Incorrect username or password",
+#             headers={"WWW-Authenticate": "Basic"},
+#         )
+#     return credentials.username
 
-st.write("xxxxx")
-
-response = requests.get("http://localhost:8000/api")
-
-if response.status_code == 200:
-    st.write("FastAPI says:", response.json()["message"])
-else:
-    st.write("Failed to fetch data from FastAPI")
+@app.get("/", response_class=HTMLResponse)
+def read_root(request: Request):
+    return templates.TemplateResponse("chatbot_ui.html", {"request": request})
