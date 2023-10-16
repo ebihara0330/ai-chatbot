@@ -159,12 +159,14 @@ if prompt := st.chat_input("Please enter the prompt"):
 
     with st.spinner('回答を生成中...'):
         openai.api_type = "azure"
-        openai.api_base = "https://openai-mz-chatbot.openai.azure.com/"
+        # openai.api_base = "https://openai-mz-chatbot.openai.azure.com/"
+        openai.api_base = "https://testopennetwork.openai.azure.com/"
         openai.api_version = "2023-07-01-preview"
-        openai.api_key = "031c7e70e64744d0b4aca4861184163d"
+        # openai.api_key = "031c7e70e64744d0b4aca4861184163d"
+        openai.api_key = "fc9f375146314c79b2e30139e15240a2"
 
         response = openai.ChatCompletion.create(
-        engine="gpt-35-turbo",
+        engine="gpt-35-turbo2",
         messages = [{"role":"system","content":"You are an AI assistant that helps people find information."},{"role":"user","content":prompt}],
         temperature=0.7,
         max_tokens=800,
