@@ -1,0 +1,40 @@
+prototype:
+  Test1:
+    title: Test1
+    path: /work/ebihara/prototype-test.py
+    updatedate: 2023-10-16
+  Test2:
+    title: Test2
+    path: /work/ebihara/prototype-test.py
+    updatedate: 2023-10-15
+credentials:
+  usernames:
+    toru.ebihara:
+      email: toru.ebihara@sony.com
+      name: toru.ebihara
+      password: 
+    yuji.yamaguchi:
+      email: yuji.yamaguchi@sony.com
+      name: yuji.yamaguchi
+      password: 
+    yuma.takao:
+      email: yuma.takao@sony.com
+      name: yuma.takao
+      password: 
+    takeshi.etoh:
+      email: takeshi.etoh@sony.com
+      name: takeshi.etoh
+      password: 
+    noriyuki.sakai:
+      email: noriyuki.sakai@sony.com
+      name: noriyuki.sakai
+      password: 
+    michihiro.kuromoto:
+      email: michihiro.kuromoto@sony.com
+      name: michihiro.kuromoto
+      password: 
+cookie:
+  expiry_days: 1
+  key: some_signature_key
+  name: some_cookie_name
+
