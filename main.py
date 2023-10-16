@@ -127,7 +127,8 @@ model_engine = "text-davinci-002"
 prompt = (f"OPENAI_API_TYPE: azure\n"
           f"OPENAI_API_HOST: https://openai-mz-chatbot.openai.azure.com/\n"
           f"OPENAI_API_KEY: {openai.api_key}\n"
-          f"AZURE_DEPLOYMENT_ID: gpt-35-turbo\n")
+          f"AZURE_DEPLOYMENT_ID: gpt-35-turbo\n"
+          f"こんにちは\n")
 completions = openai.Completion.create(
     engine=model_engine,
     prompt=prompt,
