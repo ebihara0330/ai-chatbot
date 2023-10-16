@@ -126,9 +126,9 @@ import json
 
 # 与えられた情報を設定
 OPENAI_API_TYPE = 'azure'
-OPENAI_API_HOST = 'https://openai-mz-chatbot.openai.azure.com/'
-OPENAI_API_KEY = '031c7e70e64744d0b4aca4861184163d'
-AZURE_DEPLOYMENT_ID = 'gpt-35-turbo'
+OPENAI_API_HOST = 'https://testopennetwork.openai.azure.com/'
+OPENAI_API_KEY = 'fc9f375146314c79b2e30139e15240a2'
+AZURE_DEPLOYMENT_ID = 'gpt-35-turbo2'
 
 # エンドポイントURLを構築
 endpoint_url = f"{OPENAI_API_HOST}v1/engines/{AZURE_DEPLOYMENT_ID}/completions"
