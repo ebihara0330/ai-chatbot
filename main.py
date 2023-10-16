@@ -118,7 +118,49 @@ if st.session_state.prev_selection != selected_prototype + selected_prototype2 :
 #
 # プロンプトを元にAIの回答を生成する
 #------------------------------------------------------------------------
-    
+
+#--------------------------------------------------------------
+
+import requests
+import json
+
+# 与えられた情報を設定
+OPENAI_API_TYPE = 'azure'
+OPENAI_API_HOST = 'https://openai-mz-chatbot.openai.azure.com/'
+OPENAI_API_KEY = '031c7e70e64744d0b4aca4861184163d'
+AZURE_DEPLOYMENT_ID = 'gpt-35-turbo'
+
+# エンドポイントURLを構築
+endpoint_url = f"{OPENAI_API_HOST}v1/engines/{AZURE_DEPLOYMENT_ID}/completions"
+
+# ヘッダーを設定
+headers = {
+    "Authorization": f"Bearer {OPENAI_API_KEY}",
+    "Content-Type": "application/json"
+}
+
+# リクエストデータを設定
+data = {
+    "prompt": "Translate the following English text to French: 'Hello, how are you?'",
+    "max_tokens": 60
+}
+
+# POSTリクエストを送信
+response = requests.post(endpoint_url, headers=headers, json=data)
+
+# 応答をチェック
+if response.status_code == 200:
+    # 成功: 応答をJSONとして解析し、結果を表示
+    response_json = response.json()
+    print(response_json['choices'][0]['text'])
+    st.write(response_json['choices'][0]['text'])
+else:
+    # エラー: エラーメッセージを表示
+    print(f"Error: {response.status_code}")
+    print(response.text)
+    st.write(response.text)
+#--------------------------------------------------------------
+
 # アプリの再実行の際に履歴のチャットメッセージを表示
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
