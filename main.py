@@ -121,25 +121,45 @@ if st.session_state.prev_selection != selected_prototype + selected_prototype2 :
 
 #--------------------------------------------------------------
 
+import os
 import openai
+openai.api_type = "azure"
+openai.api_base = "https://openai-mz-chatbot.openai.azure.com/"
+openai.api_version = "2023-07-01-preview"
 openai.api_key = "031c7e70e64744d0b4aca4861184163d"
-model_engine = "text-davinci-002"
-prompt = (f"OPENAI_API_TYPE: azure\n"
-          f"OPENAI_API_HOST: https://openai-mz-chatbot.openai.azure.com/\n"
-          f"OPENAI_API_KEY: {openai.api_key}\n"
-          f"AZURE_DEPLOYMENT_ID: gpt-35-turbo\n"
-          f"こんにちは\n")
-completions = openai.Completion.create(
-    engine=model_engine,
-    prompt=prompt,
-    max_tokens=1024,
-    n=1,
-    stop=None,
-    temperature=0.5,
-)
-message = completions.choices[0].text
-print(message)
 
+response = openai.ChatCompletion.create(
+  engine="gpt-35-turbo",
+  messages = [{"role":"system","content":"You are an AI assistant that helps people find information."},{"role":"user","content":"あなたの誕生日は"}],
+  temperature=0.7,
+  max_tokens=800,
+  top_p=0.95,
+  frequency_penalty=0,
+  presence_penalty=0,
+  stop=None)
+
+# #Note: The openai-python library support for Azure OpenAI is in preview.
+# import os
+# import openai
+# openai.api_type = "azure"
+# openai.api_base = "https://testopennetwork.openai.azure.com/"
+# openai.api_version = "2023-07-01-preview"
+# openai.api_key = "fc9f375146314c79b2e30139e15240a2"
+
+# response = openai.ChatCompletion.create(
+#   engine="gpt-35-turbo2",
+#   messages = [{"role":"system","content":"You are an AI assistant that helps people find information."},{"role":"user","content":"あなたの誕生日は"}],
+#   temperature=0.7,
+#   max_tokens=800,
+#   top_p=0.95,
+#   frequency_penalty=0,
+#   presence_penalty=0,
+#   stop=None)
+
+message_content = response['choices'][0]['message']['content']
+st.write(message_content)
+
+  
 #--------------------------------------------------------------
 
 # アプリの再実行の際に履歴のチャットメッセージを表示
