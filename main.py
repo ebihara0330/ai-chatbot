@@ -165,7 +165,7 @@ if prompt := st.chat_input("Please enter the prompt"):
 
         response = openai.ChatCompletion.create(
         engine="gpt-35-turbo",
-        messages = [{"role":"system","content":"You are an AI assistant that helps people find information."},{"role":"user","content":"あなたの誕生日は"}],
+        messages = [{"role":"system","content":"You are an AI assistant that helps people find information."},{"role":"user","content":prompt}],
         temperature=0.7,
         max_tokens=800,
         top_p=0.95,
@@ -173,8 +173,6 @@ if prompt := st.chat_input("Please enter the prompt"):
         presence_penalty=0,
         stop=None)
         message_content = response['choices'][0]['message']['content']
-        st.write(message_content)
-
         st.chat_message("assistant").markdown(message_content)
         st.session_state.messages.append({"role": "assistant", "content": message_content})
 
