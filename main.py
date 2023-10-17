@@ -38,10 +38,9 @@ def check_password():
         config = yaml.load(file, Loader=SafeLoader)
     # パスワード取得・ハッシュ化
     passwords = json.loads(os.environ.get('password') if 'password' in os.environ else st.secrets["password"])
-    hashed_passwords = stauth.Hasher(passwords).generate()
     # 認証情報のパスワード更新
     for index, (username, user_details) in enumerate(config['credentials']['usernames'].items()):
-        user_details['password'] = hashed_passwords[index]
+        user_details['password'] = passwords[index]
     # authenticatorに認証情報設定
     authenticator = stauth.Authenticate(
         config['credentials'], config['cookie']['name'], config['cookie']['key'],config['cookie']['expiry_days']
