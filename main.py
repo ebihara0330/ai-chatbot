@@ -150,10 +150,32 @@ if prompt := st.chat_input("Please enter the prompt"):
         presence_penalty=0,
         stop=None)
 
+        message_content = response['choices'][0]['message']['content']
+        response1 = selected_prototype  + "  \n" + message_content
+        st.chat_message("assistant").markdown(response1)
+        st.session_state.messages.append({"role": "assistant", "content": response1})
+
     if selected_prototype == selected_prototype2:
         st.stop()
 
     with st.spinner('回答を生成中...'):
-        response2 = selected_prototype2  + "  \n" + prompt + "→xxxx2"
+        #Note: The openai-python library support for Azure OpenAI is in preview.
+        openai.api_type = "azure"
+        openai.api_base = "https://chatbot-ai-ebihara-selected-networks.openai.azure.com/"
+        openai.api_version = "2023-07-01-preview"
+        openai.api_key = os.getenv("OPENAI_API_KEY2")
+
+        response = openai.ChatCompletion.create(
+        engine="gpt-35-turbo-selected-network",
+        messages = [{"role":"system","content":"You are an AI assistant that helps people find information."},{"role":"user","content":prompt}],
+        temperature=0.7,
+        max_tokens=800,
+        top_p=0.95,
+        frequency_penalty=0,
+        presence_penalty=0,
+        stop=None)
+
+        message_content = response['choices'][0]['message']['content']
+        response2 = selected_prototype2  + "  \n" + message_content
         st.chat_message("assistant").markdown(response2)
         st.session_state.messages.append({"role": "assistant", "content": response2})
