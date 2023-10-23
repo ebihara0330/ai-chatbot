@@ -18,6 +18,7 @@ sys.path.append(os.path.abspath("work"))
 import prototype_common
 import streamlit as st
 
+from langchain.vectorstores import FAISS
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter
@@ -51,7 +52,7 @@ def askChatGPT(question, history):
     openai.api_version = "2023-07-01-preview"
     openai.api_base = "https://chatbot-ai-ebihara-public.openai.azure.com/"
     openai.api_type = "azure"
-    
+
 
     # LLMの設定
     llm = AzureChatOpenAI(openai_api_version=openai.api_version,
@@ -63,7 +64,7 @@ def askChatGPT(question, history):
     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
     # 作成済みのベクトルDBを取得
-    db = Chroma(persist_directory = './DB', embedding_function=embedding)
+    db = FAISS.load_local("./DB", embedding)
     qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=db.as_retriever(), memory=memory)
     answer = qa.run(question)
 
