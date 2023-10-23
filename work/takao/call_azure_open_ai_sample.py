@@ -48,11 +48,10 @@ def askChatGPT(question, history):
     os.environ["OPENAI_API_KEY"] = "15a7d33c4f3b4149b33f7384fdc387e7"
     os.environ["OPENAI_API_VERSION"] = "2023-07-01-preview"
 
-    # Azure OpenAIの設定
-    openai.api_type = "azure"
-    openai.api_base = "https://chatbot-ai-ebihara-public.openai.azure.com/"
     openai.api_version = "2023-07-01-preview"
-    openai.api_key = "15a7d33c4f3b4149b33f7384fdc387e7"
+    openai.api_base = "https://chatbot-ai-ebihara-public.openai.azure.com/"
+    openai.api_type = "azure"
+    
 
     # LLMの設定
     llm = AzureChatOpenAI(openai_api_version=openai.api_version,
