@@ -21,8 +21,11 @@ from azure.storage.blob import BlobServiceClient
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory
+
 from langchain.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
+from langchain.vectorstores import Milvus
+
 class PrototypeBase:
 
     def __init__(self):
@@ -62,7 +65,9 @@ class PrototypeBase:
         memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
         # 作成済みのベクトルDBを取得
-        db = Chroma(persist_directory = './DB', embedding_function=embedding)
+        db = Milvus(persist_directory = './DB', embedding_function=embedding)
+        
+        # db = Chroma(persist_directory = './DB', embedding_function=embedding)
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=db.as_retriever(), memory=memory)
         answer = qa.run(self.prompt)
 
@@ -97,3 +102,4 @@ class PrototypeBase:
             os.makedirs(directory)
         with open(download_path, "wb") as download_file:
             download_file.write(blob_client.download_blob().readall())
+            print(download_file)
