@@ -67,7 +67,6 @@ class PrototypeBase:
         embedding = OpenAIEmbeddings(deployment="text-embedding-ada-002") # embedding用のモデル「text-embedding-ada-002」を使用
         memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
-        print(os.path.dirname(sys.executable))
         # 作成済みのベクトルDBを取得
         db = Chroma(persist_directory = './DB', embedding_function=embedding)
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=db.as_retriever(), memory=memory)
@@ -99,7 +98,6 @@ class PrototypeBase:
         blob_service_client = BlobServiceClient.from_connection_string(connection_string)
         blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
         directory = os.path.dirname(download_path)
-        print(directory)
         if not os.path.exists(directory):
             os.makedirs(directory)
         with open(download_path, "wb") as download_file:
