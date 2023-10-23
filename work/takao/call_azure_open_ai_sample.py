@@ -39,13 +39,13 @@ os.environ["OPENAI_API_KEY"] = "15a7d33c4f3b4149b33f7384fdc387e7"
 os.environ["OPENAI_API_VERSION"] = "2023-07-01-preview"
 
 # データ取得（CSV）
-loader = CSVLoader("work/takao/test_data.csv",encoding="utf-8") # 外部データのテスト用データ
-documents = loader.load()
+# loader = CSVLoader("work/takao/test_data.csv",encoding="utf-8") # 外部データのテスト用データ
+# documents = loader.load()
 
 
-text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
-texts = text_splitter.split_documents(documents)
-documents = text_splitter.create_documents([doc.page_content for doc in texts])
+# text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
+# texts = text_splitter.split_documents(documents)
+# documents = text_splitter.create_documents([doc.page_content for doc in texts])
 
 # LLMの設定
 llm = AzureChatOpenAI(openai_api_version=openai.api_version,
@@ -93,7 +93,8 @@ def run(prompt, history):
         # ログのセットアップ
         prototype_common.setup_logging()
         # データ取得
-        prototype_common.get_blob()
+        print(prototype_common.get_blob())
+       
         # AIの回答生成
         answer = askChatGPT(prompt, history)
         # AIの回答返却（returnでは戻らないため）
