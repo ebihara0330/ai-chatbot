@@ -80,5 +80,8 @@ def get_blob():
 
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
     blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+    directory = os.path.dirname(download_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     with open(download_path, "wb") as download_file:
         download_file.write(blob_client.download_blob().readall())
