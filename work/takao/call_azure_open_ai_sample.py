@@ -56,9 +56,8 @@ llm = AzureChatOpenAI(openai_api_version=openai.api_version,
 embedding = OpenAIEmbeddings(deployment="text-embedding-ada-002") # embedding用のモデル「text-embedding-ada-002」を使用
 memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
-
 # 作成済みのベクトルDBを取得
-db = Chroma(persist_directory = 'https://mzbotstorage.blob.core.windows.net/root/DB', embedding_function=embedding)
+db = Chroma(persist_directory = './DB', embedding_function=embedding)
 
 
 retriever=db.as_retriever()
@@ -102,6 +101,7 @@ def run(prompt, history):
         print(error)
 
 if __name__ == "__main__":
+    
     # 起動元パラメータ取得
     params = prototype_common.read_params()
     # 起動元パラメータ設定
