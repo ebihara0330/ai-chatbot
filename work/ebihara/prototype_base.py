@@ -84,6 +84,10 @@ class PrototypeBase:
         db = Chroma.from_documents(documents, embedding, persist_directory = './DB')
         # ベクトルデータをディレクトリに保存
         db.persist()
+
+        print("db")
+        print(db)
+
         retriever = db.as_retriever()
         retriever.search_kwargs["distance_metric"] = "cos"
         retriever.search_kwargs["fetch_k"] = 100
