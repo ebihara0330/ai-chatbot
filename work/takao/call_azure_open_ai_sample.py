@@ -26,33 +26,6 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chat_models import AzureChatOpenAI
 import openai
 
-# Azure OpenAIの設定
-openai.api_type = os.environ["OPENAI_API_TYPE"] = "azure"
-openai.api_base = os.environ["OPENAI_API_BASE"] = "https://chatbot-ai-ebihara-public.openai.azure.com/"
-openai.api_version = os.environ["OPENAI_API_VERSION"] = "2023-07-01-preview"
-openai.api_key = os.environ["OPENAI_API_KEY"] = "15a7d33c4f3b4149b33f7384fdc387e7"
-
-# データ取得（CSV）
-loader = CSVLoader("work/takao/test_data.csv",encoding="utf-8") # 外部データのテスト用データ
-texts = loader.load()
-text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
-documents = text_splitter.create_documents([doc.page_content for doc in texts])
-
-
-# LLMの設定
-llm = AzureChatOpenAI(openai_api_version=openai.api_version,
-                      openai_api_base=openai.api_base,
-                      openai_api_type=openai.api_type,
-                      deployment_name="gpt-35-turbo",
-                      temperature=0)
-embedding = OpenAIEmbeddings(deployment="text-embedding-ada-002") # embedding用のモデル「text-embedding-ada-002」を使用
-memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-
-#------------------------------------------------------------------------
-# 全ファイルファイル取得処理.
-#
-# 指定ディレクトリ内のすべてのファイルのパスを取得する
-#------------------------------------------------------------------------
 def get_all_files(directory):
     file_list = []
     for root, directories, files in os.walk(directory):
@@ -67,25 +40,44 @@ if not os.path.exists(db_dir_name):
 db_dir = './' + db_dir_name
 db = get_all_files(db_dir)
 
-if not db:
-    # ベクトルDBの作成
-    db = Chroma.from_documents(texts, embedding, persist_directory = db_dir)
-    # ベクトルデータをディレクトリに保存
-    db.persist()
-else:
-    # 作成済みのベクトルDBを取得
-    db = Chroma(persist_directory = db_dir, embedding_function=embedding)
 
-retriever=db.as_retriever()
-
-qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=db.as_retriever(), memory=memory)
 chat_history = []
 
 #------------------------------------------------------------------------
 # ChatGPT呼び出し.
 #------------------------------------------------------------------------
 def askChatGPT(question, history):
-    # TODO 履歴削除時（プロトタイプ変更時）の処理実装
+
+    # Azure OpenAIの設定
+    openai.api_type = os.environ["OPENAI_API_TYPE"] = "azure"
+    openai.api_base = os.environ["OPENAI_API_BASE"] = "https://chatbot-ai-ebihara-public.openai.azure.com/"
+    openai.api_version = os.environ["OPENAI_API_VERSION"] = "2023-07-01-preview"
+    openai.api_key = os.environ["OPENAI_API_KEY"] = "15a7d33c4f3b4149b33f7384fdc387e7"
+
+    # LLMの設定
+    llm = AzureChatOpenAI(openai_api_version=openai.api_version,
+                        openai_api_base=openai.api_base,
+                        openai_api_type=openai.api_type,
+                        deployment_name="gpt-35-turbo",
+                        temperature=0)
+    embedding = OpenAIEmbeddings(deployment="text-embedding-ada-002") # embedding用のモデル「text-embedding-ada-002」を使用
+    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+
+
+    # データ取得（CSV）
+    loader = CSVLoader("work/takao/test_data.csv",encoding="utf-8") # 外部データのテスト用データ
+    texts = loader.load()
+    text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
+    documents = text_splitter.create_documents([doc.page_content for doc in texts])
+    # ベクトルDBの作成
+    db = Chroma.from_documents(documents, embedding, persist_directory = db_dir)
+    # ベクトルデータをディレクトリに保存
+    db.persist()
+
+
+    # 作成済みのベクトルDBを取得
+    db = Chroma(persist_directory = db_dir, embedding_function=embedding)
+    qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=db.as_retriever(), memory=memory)
     answer = qa.run(question)
 
     return answer

@@ -69,18 +69,16 @@ class PrototypeBase:
         embedding = OpenAIEmbeddings(deployment="text-embedding-ada-002") # embedding用のモデル「text-embedding-ada-002」を使用
         memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
-        db = Chroma(persist_directory = './DB', embedding_function=embedding)
         # データ取得（CSV）
-        if not db :
-            loader = CSVLoader("work/takao/test_data.csv",encoding="utf-8") # 外部データのテスト用データ
-            texts = loader.load()
-            text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
-            documents = text_splitter.create_documents([doc.page_content for doc in texts])
-            # ベクトルDBの作成
-            db = Chroma.from_documents(documents, embedding, persist_directory = './DB')
-            # ベクトルデータをディレクトリに保存
-            db.persist()
-
+        loader = CSVLoader("work/takao/test_data.csv",encoding="utf-8") # 外部データのテスト用データ
+        texts = loader.load()
+        text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
+        documents = text_splitter.create_documents([doc.page_content for doc in texts])
+        # ベクトルDBの作成
+        db = Chroma.from_documents(documents, embedding, persist_directory = './DB')
+        # ベクトルデータをディレクトリに保存
+        db.persist()
+        db = Chroma(persist_directory = './DB', embedding_function=embedding)
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=db.as_retriever(), memory=memory)
         answer = qa.run(self.prompt)
 
