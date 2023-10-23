@@ -56,6 +56,7 @@ llm = AzureChatOpenAI(openai_api_version=openai.api_version,
 embedding = OpenAIEmbeddings(deployment="text-embedding-ada-002") # embedding用のモデル「text-embedding-ada-002」を使用
 memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
+
 # 作成済みのベクトルDBを取得
 db = Chroma(persist_directory = './DB', embedding_function=embedding)
 
@@ -91,6 +92,8 @@ def run(prompt, history):
     try:
         # ログのセットアップ
         prototype_common.setup_logging()
+        # データ取得
+        prototype_common.get_blob()
         # AIの回答生成
         answer = askChatGPT(prompt, history)
         # AIの回答返却（returnでは戻らないため）
@@ -101,7 +104,6 @@ def run(prompt, history):
         print(error)
 
 if __name__ == "__main__":
-    
     # 起動元パラメータ取得
     params = prototype_common.read_params()
     # 起動元パラメータ設定

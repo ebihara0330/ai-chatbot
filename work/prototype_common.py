@@ -73,7 +73,7 @@ def generate_ai_answer(prompt):
     return response['choices'][0]['message']['content']
 
 def get_blob():
-    connection_string = "55enF2UEzMTFtjn9mpg9TPvSgNpWgULSLkj0U3ErPYZhjwoNnQQoRoW6JzszuHO31h+sz0P2XaZ8+ASt0rOc+Q=="  # Azure Portal から取得する
+    connection_string = "DefaultEndpointsProtocol=https;AccountName=mzbotstorage;AccountKey=55enF2UEzMTFtjn9mpg9TPvSgNpWgULSLkj0U3ErPYZhjwoNnQQoRoW6JzszuHO31h+sz0P2XaZ8+ASt0rOc+Q==;EndpointSuffix=core.windows.net"  # Azure Portal から取得する
     container_name = "root"
     blob_name = "DB/chroma.sqlite3"
     download_path = "./DB/chroma.sqlite3"
