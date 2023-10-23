@@ -22,6 +22,7 @@ from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory
 from langchain.vectorstores import Chroma
+from langchain.vectorstores import FAISS
 from langchain.chains import ConversationalRetrievalChain
 
 class PrototypeBase:
@@ -61,7 +62,7 @@ class PrototypeBase:
         embedding = OpenAIEmbeddings(deployment="text-embedding-ada-002") # embedding用のモデル「text-embedding-ada-002」を使用
         memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
-        db = Chroma(persist_directory = './DB', embedding_function=embedding)
+        db = FAISS.load_local("./DB", embedding)
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=db.as_retriever(), memory=memory)
         answer = qa.run(self.prompt)
 
