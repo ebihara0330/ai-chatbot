@@ -29,7 +29,7 @@ from langchain.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
 import os
 import sys
-
+import shutil
 
 class PrototypeBase:
 
@@ -70,6 +70,7 @@ class PrototypeBase:
         memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
         # データ取得（CSV）
+        self.delete_all_files_in_directory()
         loader = CSVLoader("work/takao/test_data.csv",encoding="utf-8") # 外部データのテスト用データ
         texts = loader.load()
         text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
@@ -84,6 +85,16 @@ class PrototypeBase:
 
         return answer
 
+    def delete_all_files_in_directory(self):
+        # ディレクトリ内のファイルとサブディレクトリのリストを取得
+        for filename in os.listdir("./DB"):
+            file_path = os.path.join("./DB", filename)
+            # ファイルの場合は削除
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)
+            # ディレクトリの場合は再帰的に削除
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
 
     def setup_logging(self):
         """
