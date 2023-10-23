@@ -25,6 +25,11 @@ from langchain.memory import ConversationBufferMemory
 from langchain.vectorstores import Chroma
 from langchain.chains import ConversationalRetrievalChain
 from langchain.vectorstores import Milvus
+from langchain.vectorstores import AzureSearch
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.chains import ConversationalRetrievalChain
+from langchain.document_loaders.csv_loader import CSVLoader
+from langchain.retrievers import AzureCognitiveSearchRetriever
 
 class PrototypeBase:
 
@@ -64,11 +69,27 @@ class PrototypeBase:
         embedding = OpenAIEmbeddings(deployment="text-embedding-ada-002") # embedding用のモデル「text-embedding-ada-002」を使用
         memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
+
+        index_name = 'index-azure-openai-samples'
+
+        # Set our Azure Search
+        acs = AzureSearch(azure_search_endpoint="https://mz-ai-chatbot-search.search.windows.net",
+                        azure_search_key="TSrTemtr5MLpZAJ9ZfOgC3gBD8AVmHu37Set0qiQjXAzSeDw1TUr",
+                        index_name=index_name,
+                        embedding_function=embedding.embed_query)
+        
+        loader = CSVLoader("work/takao/test_data.csv",encoding="utf-8") # 外部データのテスト用データ
+        documents = loader.load()
+        text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
+        texts = text_splitter.split_documents(documents)
+        acs.add_documents(documents=texts)
+        retriever = AzureCognitiveSearchRetriever(content_key="content", top_k=10, index_name=index_name)
+
         # 作成済みのベクトルDBを取得
         db = Milvus(persist_directory = './DB', embedding_function=embedding)
         
         # db = Chroma(persist_directory = './DB', embedding_function=embedding)
-        qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=db.as_retriever(), memory=memory)
+        qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=retriever, memory=memory)
         answer = qa.run(self.prompt)
 
         return answer
