@@ -21,6 +21,7 @@ import streamlit_authenticator as stauth
 from yaml.loader import SafeLoader
 import os
 import openai
+import subprocess
 
 #------------------------------------------------------------------------
 # Basic認証.
@@ -115,6 +116,46 @@ if st.session_state.prev_selection != selected_prototype + selected_prototype2 :
 
 
 #------------------------------------------------------------------------
+# 履歴データの作成.
+#
+# プロンプトと合わせて送信する履歴データを作成する
+#------------------------------------------------------------------------
+def create_history_data(messages):
+    history_data = []
+    prompt = None
+    answer = None
+
+    for message in messages:
+        if message['role'] == 'user':
+            prompt = message['content']
+        elif message['role'] == 'assistant' and prompt is not None:
+            answer = message['content'].strip()
+            history_data.append({"prompt": prompt, "answer": answer})
+            prompt = None
+    return history_data
+
+
+
+#------------------------------------------------------------------------
+# プロンプトへの回答生成.
+#
+# AIプロトタイプを使ってプロンプトへの回答を生成する
+#------------------------------------------------------------------------
+def generete_answer(prompt, selected_prototype):
+
+    # 設定ファイルから選択値に対応するプロトタイプ（pythonプログラム）のパスを取得する
+    selected_path = [prototype[1]['path'] for prototype in sorted_prototypes if prototype[1]['title'] == selected_prototype][0]
+    history_json = json.dumps(history_data)
+    array_argument = [prompt, history_json]
+
+    # プロトタイプ実行
+    process  = subprocess.Popen(['python', selected_path] + array_argument, stdout=subprocess.PIPE, text=True)
+    answer, _ = process .communicate()  
+    return selected_prototype + "  \n" + answer
+
+
+
+#------------------------------------------------------------------------
 # プロトタイプの回答作成.
 #
 # プロンプトを元にAIの回答を生成する
@@ -128,53 +169,23 @@ for message in st.session_state.messages:
 # ユーザー入力に対する反応
 if prompt := st.chat_input("Please enter the prompt"):
 
-    # チャットメッセージコンテナにユーザーメッセージを表示
+    # 入力用の履歴データ作成
+    history_data = create_history_data(st.session_state.messages)
+
+    # 画面にプロンプトを表示
     st.chat_message("user").markdown(prompt)
-    # チャット履歴にユーザーメッセージを追加
     st.session_state.messages.append({"role": "user", "content": prompt})
 
+    # 選択したプロトタイプ1の回答生成
     with st.spinner('回答を生成中...'):
-        openai.api_type = "azure"
-        openai.api_base = "https://chatbot-ai-ebihara-public.openai.azure.com/"
-        openai.api_version = "2023-07-01-preview"
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        answer = generete_answer(prompt, selected_prototype)
+        st.chat_message("assistant").markdown(answer)
+        st.session_state.messages.append({"role": "assistant", "content": answer})
 
-        response = openai.ChatCompletion.create(
-        engine="gpt-35-turbo",
-        messages = [{"role":"system","content":"You are an AI assistant that helps people find information."},{"role":"user","content":prompt}],
-        temperature=0.7,
-        max_tokens=800,
-        top_p=0.95,
-        frequency_penalty=0,
-        presence_penalty=0,
-        stop=None)
-
-        message_content = response['choices'][0]['message']['content']
-        response1 = selected_prototype  + "  \n" + message_content
-        st.chat_message("assistant").markdown(response1)
-        st.session_state.messages.append({"role": "assistant", "content": response1})
-
+    # 別のプロトタイプが選択されていれば2も回答生成
     if selected_prototype == selected_prototype2:
         st.stop()
-
     with st.spinner('回答を生成中...'):
-        #Note: The openai-python library support for Azure OpenAI is in preview.
-        openai.api_type = "azure"
-        openai.api_base = "https://chatbot-ai-ebihara-selected-networks.openai.azure.com/"
-        openai.api_version = "2023-07-01-preview"
-        openai.api_key = os.getenv("OPENAI_API_KEY2")
-
-        response = openai.ChatCompletion.create(
-        engine="gpt-35-turbo-selected-network",
-        messages = [{"role":"system","content":"You are an AI assistant that helps people find information."},{"role":"user","content":prompt}],
-        temperature=0.7,
-        max_tokens=800,
-        top_p=0.95,
-        frequency_penalty=0,
-        presence_penalty=0,
-        stop=None)
-
-        message_content = response['choices'][0]['message']['content']
-        response2 = selected_prototype2  + "  \n" + message_content
-        st.chat_message("assistant").markdown(response2)
-        st.session_state.messages.append({"role": "assistant", "content": response2})
+        answer = generete_answer(prompt, selected_prototype2)
+        st.chat_message("assistant").markdown(answer)
+        st.session_state.messages.append({"role": "assistant", "content": answer})

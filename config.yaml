@@ -1,12 +1,16 @@
 prototype:
   Test1:
     title: Test1
-    path: /work/ebihara/prototype-test.py
+    path: ./work/ebihara/prototype-test.py
     updatedate: 2023-10-16
   Test2:
     title: Test2
-    path: /work/ebihara/prototype-test.py
+    path: ./work/ebihara/prototype-test.py
     updatedate: 2023-10-15
+  Test3_question_with_history:
+    title: Test3_question_with_history
+    path: ./work/takao/call_azure_open_ai_sample.py
+    updatedate: 2023-10-19
 credentials:
   usernames:
     toru.ebihara:
