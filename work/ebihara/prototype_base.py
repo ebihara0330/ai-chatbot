@@ -79,6 +79,8 @@ class PrototypeBase:
         texts = loader.load()
         text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
         documents = text_splitter.create_documents([doc.page_content for doc in texts])
+        print("documents")
+        print(documents)
         db = Chroma.from_documents(documents, embedding, persist_directory = './DB')
         # ベクトルデータをディレクトリに保存
         db.persist()
@@ -88,7 +90,12 @@ class PrototypeBase:
         retriever.search_kwargs["maximal_marginal_relevance"] = True
         retriever.search_kwargs["k"] = 7
 
+        print("retriever")
+        print(retriever)
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=retriever, memory=memory)
+
+        print("qa")
+        print(qa)
         answer = qa.run(self.prompt)
 
         return answer
