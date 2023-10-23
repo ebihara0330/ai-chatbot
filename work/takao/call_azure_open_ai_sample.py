@@ -25,6 +25,7 @@ from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.memory import ConversationBufferMemory
 from langchain.chat_models import AzureChatOpenAI
 import openai
+from azure.storage.blob import BlobServiceClient
 
 def get_all_files(directory):
     file_list = []
