@@ -11,7 +11,6 @@ import openai
 import argparse
 import json
 import os
-from azure.storage.blob import BlobServiceClient
 import logging
 import openai
 import argparse
@@ -24,9 +23,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chains import ConversationalRetrievalChain
 from langchain.document_loaders.csv_loader import CSVLoader
-
 from langchain.vectorstores import Chroma
-from langchain.chains import ConversationalRetrievalChain
 import os
 import sys
 import shutil
@@ -81,6 +78,7 @@ class PrototypeBase:
         documents = text_splitter.create_documents([doc.page_content for doc in texts])
         print("documents")
         print(documents)
+
         db = Chroma.from_documents(documents, embedding, persist_directory = './DB')
         # ベクトルデータをディレクトリに保存
         db.persist()
