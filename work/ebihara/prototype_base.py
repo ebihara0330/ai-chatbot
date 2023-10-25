@@ -16,7 +16,7 @@ import openai
 import argparse
 import json
 import os
-from azure.storage.blob import BlobServiceClient
+# from azure.storage.blob import BlobServiceClient
 from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings    
 from langchain.memory import ConversationBufferMemory
@@ -67,29 +67,36 @@ class PrototypeBase:
         embedding = OpenAIEmbeddings(deployment="text-embedding-ada-002") # embedding用のモデル「text-embedding-ada-002」を使用
         memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
 
-        # # ベクトルDBの作成
-        # db_dir_name = 'DB'
-        # if not os.path.exists(db_dir_name):
-        #     os.mkdir(db_dir_name)
-        # # データ取得（CSV）
-        # self.delete_all_files_in_directory()
-        # loader = CSVLoader("work/takao/test_data.csv",encoding="utf-8") # 外部データのテスト用データ
-        # texts = loader.load()
-        # text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
-        # documents = text_splitter.create_documents([doc.page_content for doc in texts])
+        # ベクトルDBの作成
+        db_dir_name = 'DB'
+        if not os.path.exists(db_dir_name):
+            os.mkdir(db_dir_name)
+        # データ取得（CSV）
+        self.delete_all_files_in_directory()
+        loader = CSVLoader("work/takao/test_data.csv",encoding="utf-8") # 外部データのテスト用データ
+        texts = loader.load()
+        text_splitter = CharacterTextSplitter(chunk_size=100, chunk_overlap=0)
+        documents = text_splitter.create_documents([doc.page_content for doc in texts])
 
-        # db = Chroma.from_documents(documents, embedding, persist_directory = './DB')
-        # # ベクトルデータをディレクトリに保存
-        # db.persist()
+        db = Chroma.from_documents(documents, embedding, persist_directory = './DB')
+        # ベクトルデータをディレクトリに保存
+        db.persist()
 
         db = Chroma(persist_directory = './DB', embedding_function=embedding)
-        retriever = db.as_retriever()
+        db.add_texts(['あなたは、dummyAI。', '山菜の代表は、きのこ。', '一番おいしいきのこは、まいたけ。'])
 
+        retriever = db.as_retriever()
         qa = ConversationalRetrievalChain.from_llm(llm=llm, retriever=retriever, memory=memory)
 
-        answer = qa.run(self.prompt)
+        # answer = qa.run("2023年のMLBア・リーグのホームラン王は？")
+        # print(answer)
+        # answer = qa.run("一番おいしいきのこは何？")
+        # print(answer)
 
-        return answer
+        docs = db.similarity_search("2023年のMLBア・リーグのホームラン王は？", top_k=2) 
+        print(docs[0].page_content, docs[1].page_content)
+
+        return ""
 
     def delete_all_files_in_directory(self):
         # ディレクトリ内のファイルとサブディレクトリのリストを取得
@@ -122,10 +129,10 @@ class PrototypeBase:
         blob_name = "DB/chroma.sqlite3"
         download_path = "./DB/chroma.sqlite3"
 
-        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
-        blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
-        directory = os.path.dirname(download_path)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        with open(download_path, "wb") as download_file:
-            download_file.write(blob_client.download_blob().readall())
+        # blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        # blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+        # directory = os.path.dirname(download_path)
+        # if not os.path.exists(directory):
+        #     os.makedirs(directory)
+        # with open(download_path, "wb") as download_file:
+        #     download_file.write(blob_client.download_blob().readall())
