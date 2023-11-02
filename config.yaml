@@ -1,20 +1,41 @@
+###########################################################
+# overview
+#  ・pollinator-aiプロジェクトの各種設定ファイル
+#
+###########################################################
+
+
+#----------------------------------------------------------
+# 画面に表示するプロトタイプ
+#  ・title：セレクトボックスの表示名
+#  ・path：プロンプト送信時に実行されるプログラム
+#  ・updatedate：プロトタイプの更新日（画面は更新日降順で表示）
+#----------------------------------------------------------
 prototype:
-  Test1:
-    title: Test1
-    path: ./work/ebihara/prototype-test.py
-    updatedate: 2023-10-16
-  Test2:
-    title: Test2
-    path: ./work/ebihara/prototype-test.py
-    updatedate: 2023-10-15
-  Test3_question_with_history:
-    title: Test3_question_with_history
-    path: ./work/takao/call_azure_open_ai_sample.py
-    updatedate: 2023-10-19
-  Test4_search_from_data:
-    title: Test4_search_from_csv_data
-    path: ./work/takao/search_from_csv_data.py
+  search_mikke_only:
+    title: search_mikke_only
+    path: ./prototype/search_mikke_only.py
+    updatedate: 2023-10-30
+  search_db_only:
+    title: search_db_only
+    path: ./prototype/search_db_only.py
+    updatedate: 2023-11-30
+  search_mikke_and_db:
+    title: search_mikke_and_db
+    path: ./prototype/search_mikke_and_db.py
+    updatedate: 2023-10-31
+  CSV_search_with_history:
+    title: mikke_and_db_history_gpt3
+    path: ./prototype/search_mikke_and_db_with_history_gpt3.py
     updatedate: 2023-10-23
+
+
+#----------------------------------------------------------
+# ユーザ情報
+#  ・email：メールアドレス
+#  ・name：ログインユーザ名
+#  ・password：ログインパスワード（外部読み込みのため未設定）
+#----------------------------------------------------------
 credentials:
   usernames:
     toru.ebihara:
@@ -46,3 +67,24 @@ cookie:
   key: some_signature_key
   name: some_cookie_name
 
+
+#----------------------------------------------------------
+# langchainの検索パラメータ
+#  ・chunk_size：vectorデータ1件あたりの最大文字数
+#  ・chunk_overlap：データ分割した場合の各データの重複文字数
+#  ・input_token_limit：langchain→aiへの入力パラメータ上限
+#  ・external_data_limit：外部データをvector登録する際の最大文字数
+#  ・max_tokens：AIが出力する最大文字数
+#
+# 補足）
+#  ・AIとのやりとり1回の入出力トークンの上限（デフォルト）は8192トークン
+#  ・入出力の合計が上記を超過するとエラーになるため収まるように調整する
+#  ・aiへの入力パラメータ上限を5000、外部データの文字数を3000と
+#　　した場合DBデータが最大2000文字を入力として最大で3000文字の回答が作成される
+#----------------------------------------------------------
+langchain:
+  chunk_size: 1000
+  chunk_overlap: 0
+  input_token_limit: 6000
+  external_data_limit: 5000
+  max_tokens: 2000

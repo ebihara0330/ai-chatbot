@@ -11,7 +11,6 @@ contents:
 import os
 from bs4 import BeautifulSoup
 import pandas as pd
-import numpy as np
 
 # キーの定義
 libros = 'libros'
@@ -73,17 +72,15 @@ def remove_html_tags(text):
     return soup.get_text()
 
 '''
-テキスト内のメールアドレス除去
-'''
-def remove_mail_address(data):
-    return data.str.replace(r'[a-zA-Z0-9._+-]+@[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.+[a-zA-Z]{2,}', '', regex=True)
-
-'''
 ベクトルDB用のカラム結合データ作成
 '''
 def combine_columns(df, selected_columns, content_list):
     for col in df.columns:
         df[col] = df[col].fillna('')
+        # メールアドレスを除去
+        df[col] = df[col].replace(r'[a-zA-Z0-9._+-]+@[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.+[a-zA-Z]{2,}', '', regex=True)
+
+
         # 【カラム名】
         # 値
         # の形式にする
@@ -115,9 +112,6 @@ def create_csv_for_vector_db():
             if extension == "csv":
                 selected_columns = stef_csv
                 df = pd.read_csv(file)
-                # メンバー（メールアドレスを除去）
-                member = 'メンバー'
-                df[member] = remove_mail_address(df[member])
 
                 combine_columns(df, selected_columns, content_list)
 
@@ -134,13 +128,7 @@ def create_csv_for_vector_db():
         elif data_source == "libros":
             selected_columns = data_source
             df = pd.read_csv(file)
-            # 著者、簡略概要（メールアドレスを除去）
-            author = '著者'
-            short_description = '簡略概要'
-            title_en = 'タイトル(英)'
-            sub_search_keyword = '補足検索キーワード'
-            df[author] = remove_mail_address(df[author])
-            df[short_description] = remove_mail_address(df[short_description])
+
             combine_columns(df, selected_columns, content_list)
 
         elif data_source == "tps":
@@ -161,10 +149,8 @@ def create_csv_for_vector_db():
     df = pd.concat(content_list, ignore_index=True)
     new_csv_path = formatted_data_path + 'combined_data.csv'
 
-    # 一旦100件でテスト
-    # df = df.head(100)
-
-    df.to_csv(new_csv_path, index=False)
+    # Excelから開いても文字化けしないように「utf_8_sig」を指定
+    df.to_csv(new_csv_path, index=False, encoding="utf_8_sig")
 
     print('CSV load has been completed.')
     return new_csv_path

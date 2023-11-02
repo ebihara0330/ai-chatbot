@@ -19,8 +19,6 @@ import json
 import yaml
 import streamlit_authenticator as stauth
 from yaml.loader import SafeLoader
-import os
-import openai
 import subprocess
 
 #------------------------------------------------------------------------
@@ -35,7 +33,7 @@ st.title('COE-AI Chatbot')
 # Basic認証
 def check_password():
     # ユーザ情報取得
-    with open('./config.yaml') as file:
+    with open('./config.yaml', 'r', encoding='utf-8') as file:
         config = yaml.load(file, Loader=SafeLoader)
     # パスワード取得・ハッシュ化
     passwords = json.loads(os.environ.get('password') if 'password' in os.environ else st.secrets["password"])
@@ -93,7 +91,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 # 設定ファイル（config.json）からプロトタイプ読み込み
-with open('./config.yaml') as file:
+with open('./config.yaml', 'r', encoding='utf-8') as file:
     config = yaml.load(file, Loader=SafeLoader)
 # プロトタイプを更新日降順でソート
 sorted_prototypes = sorted(config['prototype'].items(), key=lambda x: x[1]['updatedate'], reverse=True)
@@ -120,18 +118,19 @@ if st.session_state.prev_selection != selected_prototype + selected_prototype2 :
 #
 # プロンプトと合わせて送信する履歴データを作成する
 #------------------------------------------------------------------------
-def create_history_data(messages):
+def create_history_data(selected_prototype):
     history_data = []
-    prompt = None
-    answer = None
-
-    for message in messages:
+    for message in st.session_state.messages:
         if message['role'] == 'user':
             prompt = message['content']
-        elif message['role'] == 'assistant' and prompt is not None:
+        elif message['role'] == 'assistant':
             answer = message['content'].strip()
-            history_data.append({"prompt": prompt, "answer": answer})
-            prompt = None
+            if selected_prototype in answer:
+                history_data.append({ 
+                    "prompt" :prompt, 
+                    "answer" :answer.strip(selected_prototype + "  \n[]\n")})
+            else:
+                continue
     return history_data
 
 
@@ -145,7 +144,7 @@ def generete_answer(prompt, selected_prototype):
 
     # 設定ファイルから選択値に対応するプロトタイプ（pythonプログラム）のパスを取得する
     selected_path = [prototype[1]['path'] for prototype in sorted_prototypes if prototype[1]['title'] == selected_prototype][0]
-    history_json = json.dumps(history_data)
+    history_json = json.dumps(create_history_data(selected_prototype))
     array_argument = [prompt, history_json]
 
     # プロトタイプ実行
@@ -168,9 +167,6 @@ for message in st.session_state.messages:
 
 # ユーザー入力に対する反応
 if prompt := st.chat_input("Please enter the prompt"):
-
-    # 入力用の履歴データ作成
-    history_data = create_history_data(st.session_state.messages)
 
     # 画面にプロンプトを表示
     st.chat_message("user").markdown(prompt)

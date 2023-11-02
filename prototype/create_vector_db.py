@@ -16,10 +16,8 @@ import os
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.chains import ConversationalRetrievalChain
 from langchain.document_loaders.csv_loader import CSVLoader
 from langchain.memory import ConversationBufferMemory
-from langchain.chat_models import AzureChatOpenAI
 
 # ファイル読み込み・ベクトルDB作成用CSVデータ作成処理
 csv_path = file_reader.create_csv_for_vector_db()
