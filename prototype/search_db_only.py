@@ -7,6 +7,7 @@ mikkeから取得したデータとDBデータを加味したAI回答を生成�
 
 """
 from prototype_base import PrototypeBase
+import socket
 
 class PrototypeSample(PrototypeBase):
 
@@ -33,6 +34,8 @@ class PrototypeSample(PrototypeBase):
         # GETリクエストを発行
         response = requests.get(url)
 
+        ip_address = socket.gethostbyname('ai-chatbot-app.azurewebsites.net')
+        print(ip_address)
         # レスポンスコードを確認 (200は成功を意味します)
         print(response.status_code)
 
