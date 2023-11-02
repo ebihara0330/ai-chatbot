@@ -15,7 +15,6 @@ sys.path.append(os.path.abspath("prototype"))
 from prototype_base import PrototypeBase
 from azure.storage.blob import BlobServiceClient
 class PrototypeSample(PrototypeBase):
-
     @PrototypeBase.processing_structure
     def run(params):
         """
@@ -48,6 +47,7 @@ class PrototypeSample(PrototypeBase):
             download_file.write(blob_client.download_blob().readall())
             print(download_file)
 
+        super().config
         # アクセスするURL
         url = 'https://mzbotstorage.blob.core.windows.net/root/test.txt?sp=r&st=2023-11-02T09:27:37Z&se=2024-11-02T17:27:37Z&spr=https&sv=2022-11-02&sr=b&sig=xR0U0p68A0QjA41Vr%2Fd1lRNp1cceR6rZeeFNP2Zsk8w%3D'
 

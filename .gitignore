@@ -2,5 +2,4 @@
 .streamlit/
 __pycache__/
 # ベクトルDBデータ格納ディレクトリ
-DB/
 .vscode

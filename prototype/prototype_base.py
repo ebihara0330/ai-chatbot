@@ -6,19 +6,25 @@ contents:
 chatbotUIプロトタイプの基本的な枠組みを実装する
 
 """
+import re
+import os
+import sys
+import json
+import yaml
+import sqlite3
 import logging
 import argparse
-import json
-import sys
-import os
-import yaml
+from typing import Optional
 from yaml.loader import SafeLoader
 
-sys.path.append(os.path.abspath("util"))
-from llm_manager import LlmManager # type: ignore
-from external_api_manager import ExternalAPIManager # type: ignore 
+sys.path.extend([os.path.abspath("./"), os.path.abspath("util")])
+from util.llm_manager import LlmManager
+from util.external_api_manager import ExternalAPIManager
 
 class PrototypeBase:
+    config = None
+    ext_api: Optional[ExternalAPIManager] = None
+    llm: Optional[LlmManager] = None
 
     def __init__(self):
         """
@@ -64,28 +70,43 @@ class PrototypeBase:
         """
         def wrapper(self):
             try:
-                # 設定ファイル読み込み
+                # 設定ファイル取得
                 with open('./config.yaml', 'r', encoding='utf-8') as file:
-                    config = yaml.load(file, Loader=SafeLoader)
-                    self.config = config['langchain']
+                    self.config = yaml.load(file, Loader=SafeLoader)
+                    self.config = self.config['langchain']
 
                 # パラメータ取得
                 params = self.read_params()
                 params.history = json.loads(params.history)
-                params.ext_api = ExternalAPIManager(self.config)
-                #params.llm = LlmManager(self.config, "gpt-35-turbo", "text-embedding-ada-002", "2023-07-01-preview")
+                params.ext_api = self.ext_api = ExternalAPIManager(self.config)
+                params.llm = self.llm = LlmManager(self.config, "gpt-35-turbo", "text-embedding-ada-002", "2023-07-01-preview")
 
                 # プロトタイプ実行
                 print(func(params))
 
             except Exception as e:
-                # エラーの場合はエラー内容を返却
-                logging.error(f"An error occurred in {func.__name__}: {str(e)}")
-                print(e)
+                if "InconsistentHashError" in str(e.add_note):
+                    pattern = re.compile(r'[a-f0-9]{32}')
+                    hashes = pattern.findall(str(e))
+                    try:
+                        conn = sqlite3.connect('DB/chroma.sqlite3', uri=True)
+                        cur = conn.cursor()
+                        cur.execute(f"UPDATE migrations SET hash = '{hashes[1]}' WHERE hash = '{hashes[0]}';")
+                        conn.commit()
+                        conn.close()
+                        print(func(params))
+                    except Exception as e:
+                        # エラーの場合はエラー内容を返却
+                        logging.error(f"An error occurred in {func.__name__}: {str(e)}")
+                        print(e)
+                else:
+                    # エラーの場合はエラー内容を返却
+                    logging.error(f"An error occurred in {func.__name__}: {str(e)}")
+                    print(e)
             finally:
                 # persistしなくても永続化される問題への対処で外部データを一律削除
-                if hasattr(params.llm, 'temp_ids') :
-                    params.llm.db.delete(params.llm.temp_ids)
+                if hasattr(self.llm, 'temp_ids') :
+                    self.llm.db.delete(self.llm.temp_ids)
 
         return wrapper
 

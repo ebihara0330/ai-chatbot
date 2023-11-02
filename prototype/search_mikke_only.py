@@ -27,20 +27,16 @@ class PrototypeSample(PrototypeBase):
         Returns:
         プロンプトへのAI回答
         """
-        # vectorDB取得
-        params.llm.db = Chroma(
-            client=chromadb.PersistentClient(path='./Dummy'),
-            embedding_function=params.llm.embedding)
 
-        # mikkeからのデータ取得
-        mikke_response = params.ext_api.search_mikke(params.prompt)
+        # # mikkeからのデータ取得
+        # mikke_response = params.ext_api.search_mikke(params.prompt)
 
-        # LLMに一時的な入力データを追加
-        if params.ext_api.is_exist(mikke_response) :
-            params.llm.add_documents(params.ext_api.create_documents(mikke_response))
+        # # LLMに一時的な入力データを追加
+        # if params.ext_api.is_exist(mikke_response) :
+        #     params.llm.add_documents(params.ext_api.create_documents(mikke_response))
 
         # プロンプトへの回答を生成
-        return params.llm.request_answer(prompt=params.prompt, history=params.history)
+        return super().llm.request_answer(prompt=params.prompt, history=params.history)
 
 if __name__ == "__main__":
     PrototypeSample().run()
