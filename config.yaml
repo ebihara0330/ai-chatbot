@@ -12,6 +12,10 @@
 #  ・updatedate：プロトタイプの更新日（画面は更新日降順で表示）
 #----------------------------------------------------------
 prototype:
+  blob_db_download:
+    title: blob_db_download
+    path: ./prototype/blob_db_download.py
+    updatedate: 2023-11-05
   search_mikke_only:
     title: search_mikke_only
     path: ./prototype/search_mikke_only.py
@@ -75,6 +79,7 @@ cookie:
 #  ・input_token_limit：langchain→aiへの入力パラメータ上限
 #  ・external_data_limit：外部データをvector登録する際の最大文字数
 #  ・max_tokens：AIが出力する最大文字数
+#  ・db_path：プロトタイプが利用するBlobコンテナのDBファイル
 #
 # 補足）
 #  ・AIとのやりとり1回の入出力トークンの上限（デフォルト）は8192トークン
@@ -88,3 +93,4 @@ langchain:
   input_token_limit: 6000
   external_data_limit: 5000
   max_tokens: 2000
+  db_path: DB/develop/chroma.sqlite3
