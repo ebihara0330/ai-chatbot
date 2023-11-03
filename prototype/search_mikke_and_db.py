@@ -13,20 +13,18 @@ logging.basicConfig(level=logging.DEBUG)
 class Prototype(PrototypeBase):
 
     @PrototypeBase.processing_structure
-    def run(params):
+    def run(params : PrototypeBase.Params):
         """
-        プロトタイプ実行
+        プロトタイプ
 
-        Args:params
-        └ config：langchain関連のプロジェクト設定（config.yaml）
-        └ llm：LLM関連のプログラム
-        └ ext_api：外部API関連のプログラム
-        └ prompt：検証UIから送信されたプロンプト
-        └ history：チャット履歴
-
+        Args:
+        入力パラメータ群
         Returns:
-        プロンプトへのAI回答
+        プロンプトに対するAIの回答
         """
+        # モデル情報を設定
+        params.llm.set_model("gpt-35-turbo", "text-embedding-ada-002", "2023-07-01-preview")
+
         # mikkeからのデータ取得
         mikke_response = params.ext_api.search_mikke(params.prompt)
 

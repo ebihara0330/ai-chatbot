@@ -37,7 +37,6 @@ class ExternalAPIManager():
         """
         url = "https://api.mikke.vacloudapps.com/v1/pollinatornetwork/search"
         api_key = os.environ.get('MIKKE')
-
         headers = {
             "X-API-KEY": api_key,
             "Content-Type": "application/json"
@@ -52,7 +51,12 @@ class ExternalAPIManager():
                 }
             }
         }
+
         response = requests.post(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200 :
+            logging.debug(response.content)
+        else :
+            logging.error("api.mikke.vacloudapps.com status_code:" + str(response.status_code) + " " + response.text)
 
         return response.json()
 
@@ -68,7 +72,7 @@ class ExternalAPIManager():
         True 結果あり、False 結果なし
 
         """
-        return bool(mikke_response['hits']['hits'])
+        return 'hits' in mikke_response and bool(mikke_response['hits']['hits'])
 
 
     def create_documents(self, mikke_response) :

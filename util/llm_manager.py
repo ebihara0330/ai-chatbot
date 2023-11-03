@@ -15,16 +15,26 @@ from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings 
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
-from langchain.chains.question_answering import load_qa_chain
 
 logging.basicConfig(level=logging.DEBUG) 
 
 class LlmManager():
 
-    def __init__(self, config, llm, llm_embedding, api_version):
+    def __init__(self, config):
         """
         LLMの初期化
+
+        Args:
+        config：langchain関連の設定ファイル
+
+        """
+        # 設定ファイル
+        self.config = config
+
+
+    def set_model(self, llm, llm_embedding, api_version):
+        """
+        モデル情報設定
 
         Args:
         llm：利用するllmの名称
@@ -32,9 +42,6 @@ class LlmManager():
         api_version：llmのAPIバージョン
 
         """
-        # 設定ファイル
-        self.config = config
-
         # LLM定義
         api_type = "azure"
         api_base = "https://chatbot-ai-ebihara-public.openai.azure.com/"
@@ -108,6 +115,9 @@ class LlmManager():
 
         # チャット履歴作成
         chat_history = []
+        if "history" in kwargs:
+            for chat in kwargs["history"]:
+                chat_history.append((chat['prompt'], chat['answer']))
 
         # 回答生成
         qa = ConversationalRetrievalChain.from_llm(
@@ -115,7 +125,9 @@ class LlmManager():
             retriever=self.db.as_retriever(search_kwargs={"k": 5}), 
             return_source_documents=True,
             return_generated_question=True,
-            max_tokens_limit=self.config["input_token_limit"])
+            max_tokens_limit=self.config["input_token_limit"],
+            condense_question_llm=self.question_rearrange_llm,
+            )
         result = qa({"question": kwargs["prompt"], "chat_history": chat_history})
         logging.debug(result)
 

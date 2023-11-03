@@ -10,33 +10,35 @@ from prototype_base import PrototypeBase
 import chromadb
 from langchain.vectorstores import Chroma
 
-class PrototypeSample(PrototypeBase):
+class Prototype(PrototypeBase):
 
     @PrototypeBase.processing_structure
-    def run(params):
+    def run(params : PrototypeBase.Params):
         """
-        プロトタイプ実行
+        プロトタイプ
 
-        Args:params
-        └ config：langchain関連のプロジェクト設定（config.yaml）
-        └ llm：LLM関連のプログラム
-        └ ext_api：外部API関連のプログラム
-        └ prompt：検証UIから送信されたプロンプト
-        └ history：チャット履歴
-
+        Args:
+        入力パラメータ群
         Returns:
-        プロンプトへのAI回答
+        プロンプトに対するAIの回答
         """
+        # モデル情報を設定
+        params.llm.set_model("gpt-35-turbo", "text-embedding-ada-002", "2023-07-01-preview")
 
-        # # mikkeからのデータ取得
-        # mikke_response = params.ext_api.search_mikke(params.prompt)
+        # vectorDB取得
+        params.llm.db = Chroma(
+            client=chromadb.PersistentClient(path='./Dummy'),
+            embedding_function=params.llm.embedding)
 
-        # # LLMに一時的な入力データを追加
-        # if params.ext_api.is_exist(mikke_response) :
-        #     params.llm.add_documents(params.ext_api.create_documents(mikke_response))
+        # mikkeからのデータ取得
+        mikke_response = params.ext_api.search_mikke(params.prompt)
+
+        # LLMに一時的な入力データを追加
+        if params.ext_api.is_exist(mikke_response) :
+            params.llm.add_documents(params.ext_api.create_documents(mikke_response))
 
         # プロンプトへの回答を生成
-        return super().llm.request_answer(prompt=params.prompt, history=params.history)
+        return params.llm.request_answer(prompt=params.prompt, history=params.history)
 
 if __name__ == "__main__":
-    PrototypeSample().run()
+    Prototype().run()
