@@ -27,6 +27,9 @@ class Prototype(PrototypeBase):
         Returns:
         プロンプトへのAI回答
         """
+        # モデル情報を設定
+        params.llm.set_model("gpt-35-turbo", "text-embedding-ada-002", "2023-07-01-preview")
+
         # mikkeからのデータ取得
         mikke_response = params.ext_api.search_mikke(params.prompt)
 

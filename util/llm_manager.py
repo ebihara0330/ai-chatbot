@@ -7,6 +7,9 @@ LLMのインスタンス生成および同LLMを利用した各種機能の提�
 
 """
 
+import os
+import re
+import sqlite3
 import logging
 import chromadb
 
@@ -15,6 +18,8 @@ from langchain.chat_models import AzureChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings 
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
+from datetime import datetime, timezone
+from azure.storage.blob import BlobServiceClient
 
 logging.basicConfig(level=logging.DEBUG) 
 
@@ -171,3 +176,70 @@ class LlmManager():
         logging.debug(result)
 
         return result['answer']
+    
+
+    def modernize_vector_db(self) :
+        """
+        ベクトルDBの最新化
+
+        Contents:
+        初回・BlobDB更新時にローカルDBの置き換えを行う
+
+        """
+        # Blob接続情報取得
+        connection_string = "DefaultEndpointsProtocol=https;AccountName=mzbotstorage;AccountKey=55enF2UEzMTFtjn9mpg9TPvSgNpWgULSLkj0U3ErPYZhjwoNnQQoRoW6JzszuHO31h+sz0P2XaZ8+ASt0rOc+Q==;EndpointSuffix=core.windows.net"
+        container_name = "root"
+        blob_name = self.config["db_path"]
+        download_path = "./DB/chroma.sqlite3"
+        blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+        blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+
+        # 2回目以降（DBディレクトリ作成済）
+        if os.path.exists(download_path):
+            # blobの更新日付の方が新しければblobDBで置き換え
+            local_last_modified = datetime.fromtimestamp(os.path.getmtime(download_path), tz=timezone.utc)
+            blob_last_modified = blob_client.get_blob_properties()['last_modified']
+            if blob_last_modified > local_last_modified:
+                self.donwload_vector_db(blob_client, download_path)
+        # 初回（DBディレクトリ未作成）
+        else :
+            # 一律blobDBをダウンロード
+            os.makedirs("DB")
+            self.donwload_vector_db(blob_client, download_path)
+
+
+    def donwload_vector_db(self, blob_client, download_path):
+        """
+        ベクトルDBのダウンロード処理
+
+        Args:
+        blob_client：blob情報
+        download_path：ダウンロードするDBファイルのパス
+
+        """
+        with open(download_path, "wb") as download_file:
+            download_file.write(blob_client.download_blob().readall())
+
+
+    def update_migration(self, hashes):
+        """
+        DB利用者の更新処理
+
+        Contents:
+        ChromaはHash値を使ってDBの作成者と利用者の整合チェックを行っている
+        処理が同じでもローカル⇔サーバのオブジェクト差異でエラーになるため、
+        ローカルで作成したDBをサーバ側で利用できるよう、不整合を解消する処理を実装する
+
+        """
+        try:
+            # 利用者を作成者→現在の利用者にアップデートしてからプロトタイプを実行する
+            conn = sqlite3.connect('DB/chroma.sqlite3', uri=True)
+            cur = conn.cursor()
+            cur.execute(f"UPDATE migrations SET hash = '{hashes[1]}' WHERE hash = '{hashes[0]}';")
+            conn.commit()
+            conn.close()
+
+        except Exception as e:
+            # エラーの場合はエラー内容を返却
+            logging.error(f"An error occurred in {__name__}: {str(e)}")
+            print(e)

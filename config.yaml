@@ -23,7 +23,7 @@ prototype:
   search_db_only:
     title: search_db_only
     path: ./prototype/search_db_only.py
-    updatedate: 2023-11-30
+    updatedate: 2023-11-03
   search_mikke_and_db:
     title: search_mikke_and_db
     path: ./prototype/search_mikke_and_db.py

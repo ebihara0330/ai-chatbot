@@ -11,7 +11,6 @@ import os
 import sys
 import json
 import yaml
-import sqlite3
 import logging
 import argparse
 from typing import Optional, List, Dict, Any
@@ -83,9 +82,9 @@ class PrototypeBase:
         return parser.parse_args()
 
 
-    def make_params(self):
+    def make_params(self) -> Params:
         """
-        プロトタイプパラメータ作成
+        プロトタイプパラメータ生成
 
         Return:
         プロトタイプパラメータ
@@ -107,34 +106,6 @@ class PrototypeBase:
         return params
 
 
-    def update_migration(self, error):
-        """
-        DB利用者の更新処理
-
-        Contents:
-        ChromaはHash値を使ってDBの作成者と利用者の整合チェックを行っている
-        処理が同じでもローカル⇔サーバのオブジェクト差異でエラーになるため、
-        ローカルで作成したDBをサーバ側で利用できるよう、不整合を解消する処理を実装する
-
-        """
-        try:
-            # DBの作成者と利用者のHash値を取得
-            pattern = re.compile(r'[a-f0-9]{32}')
-            hashes = pattern.findall(str(error))
-
-            # 利用者を作成者→現在の利用者にアップデートしてからプロトタイプを実行する
-            conn = sqlite3.connect('DB/chroma.sqlite3', uri=True)
-            cur = conn.cursor()
-            cur.execute(f"UPDATE migrations SET hash = '{hashes[1]}' WHERE hash = '{hashes[0]}';")
-            conn.commit()
-            conn.close()
-
-        except Exception as e:
-            # エラーの場合はエラー内容を返却
-            logging.error(f"An error occurred in {__name__}: {str(e)}")
-            print(e)
-
-
     def processing_structure(func):
         """
         プロトタイプ実行
@@ -144,15 +115,18 @@ class PrototypeBase:
         """
         def wrapper(self):
             try:
+                # パラメータ生成
+                params : PrototypeBase.Params = self.make_params()
+                # VectorDBの最新化
+                params.llm.modernize_vector_db()
                 # プロトタイプ実行
-                params = self.make_params()
                 print(func(params))
 
             except Exception as e:
                 # DBの作成者と利用者が違う場合は利用者をアップデート後にプロトタイプ実行
                 if "InconsistentHashError" in str(e.add_note):
-                    self.update_migration(str(e))
-                    params = self.make_params()
+                    pattern = re.compile(r'[a-f0-9]{32}')
+                    params.llm.update_migration(pattern.findall(str(e)))
                     print(func(params))
                 # その他エラーはエラー内容を返却
                 else :
