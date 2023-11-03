@@ -183,7 +183,7 @@ class LlmManager():
         ベクトルDBの最新化
 
         Contents:
-        初回・BlobDB更新時にローカルDBの置き換えを行う
+        Blobに格納したDBファイルを元にローカルDBを最新化する
 
         """
         # Blob接続情報取得
@@ -218,6 +218,9 @@ class LlmManager():
 
         """
         with open(download_path, "wb") as download_file:
+            logging.debug("-----------------------------------------")
+            logging.debug("download_file.write:" + str(download_path))
+            logging.debug("-----------------------------------------")
             download_file.write(blob_client.download_blob().readall())
 
 
@@ -232,7 +235,7 @@ class LlmManager():
 
         """
         try:
-            # 利用者を作成者→現在の利用者にアップデートしてからプロトタイプを実行する
+            # 利用者を作成者→現在の利用者にアップデートする
             conn = sqlite3.connect('DB/chroma.sqlite3', uri=True)
             cur = conn.cursor()
             cur.execute(f"UPDATE migrations SET hash = '{hashes[1]}' WHERE hash = '{hashes[0]}';")
